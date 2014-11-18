@@ -30,6 +30,21 @@ func (sync *syncOpts) Execute(args []string) (err error) {
 		return
 	}
 
+	dir, err := os.Open(sync.Path)
+	if err != nil {
+		log.Fatal("Cannot open ", sync.Path)
+		return
+	}
+
+	defer dir.Close()
+
+	fi, err := dir.Stat()
+	mode := fi.Mode()
+	if !mode.IsDir() {
+		log.Fatal("Cannot sync file ", sync.Path)
+		return
+	}
+
 	s3 := s3gof3r.New(sync.EndPoint, k)
 	b := s3.Bucket(sync.Bucket)
 	conf.Concurrency = sync.Concurrency
