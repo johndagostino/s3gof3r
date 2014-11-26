@@ -62,6 +62,7 @@ func (sync *syncOpts) Execute(args []string) (err error) {
 	}
 
 	walkpath := func(path string, f os.FileInfo, err error) error {
+		copySize := int64(1024) * 10 * 1024
 		r, err := os.Open(path)
 		rel, err := filepath.Rel(sync.Path, path)
 
@@ -75,12 +76,17 @@ func (sync *syncOpts) Execute(args []string) (err error) {
 		if err != nil {
 			return nil
 		}
-		if _, err = io.Copy(w, r); err != nil {
+		if _, err = io.CopyN(w, r, copySize); err != nil {
 			return nil
 		}
 		if err = w.Close(); err != nil {
 			return nil
 		}
+
+		if err = r.Close(); err != nil {
+			return nil
+		}
+
 		return nil
 	}
 

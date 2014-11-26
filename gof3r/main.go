@@ -36,6 +36,7 @@ import (
 	"runtime"
 	"time"
 
+	"github.com/davecheney/profile"
 	"github.com/jessevdk/go-flags"
 	"github.com/rlmcpherson/s3gof3r"
 )
@@ -46,6 +47,17 @@ const (
 )
 
 func main() {
+	cfg := profile.Config{
+		MemProfile:   true,
+		BlockProfile: true,
+		CPUProfile:   true,
+		ProfilePath:  ".", // store profiles in current directory
+	}
+
+	// p.Stop() must be called before the program exits to
+	// ensure profiling information is written to disk.
+	p := profile.Start(&cfg)
+
 	// set the number of processors to use to the number of cpus for parallelization of concurrent transfers
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
@@ -81,6 +93,7 @@ func main() {
 		os.Exit(1)
 	}
 	fmt.Fprintf(os.Stderr, "duration: %v\n", time.Since(start))
+	p.Stop()
 }
 
 // getAWSKeys gets the AWS Keys from environment variables or the instance-based metadata on EC2
